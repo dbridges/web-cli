@@ -1,67 +1,48 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-type web struct {
-	app string
-}
+var Version string
 
-func (web *web) run() {
-	app := kingpin.New("web", "Associate websites to directory paths and easily open them.")
-	kingpin.Version("0.0.1")
+func main() {
+	parser := kingpin.New("web", "Associate websites to directory paths and easily open them.")
+	parser.Version(Version)
 
-	add := app.Command("add", "Associate a website to the current directory")
+	add := parser.Command("add", "Associate a website to the current working directory")
 	addName := add.Arg("name", "Name to associate with").Required().String()
 	addURL := add.Arg("url", "URL of website").Required().String()
 
-	remove := app.Command("remove", "Remove associated website").Alias("rm")
+	remove := parser.Command("remove", "Remove an associated website by name").Alias("rm")
 	removeName := remove.Arg("name", "Name to remove").Required().String()
 
-	list := app.Command("list", "List websites associate with current directory").Alias("ls")
+	list := parser.Command("list", "List websites associated with current working directory").Alias("ls")
 
-	cmd, err := app.Parse(os.Args[1:])
+	cmd, parseErr := parser.Parse(os.Args[1:])
 
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "expected command") && len(os.Args) == 2 {
-			web.open(os.Args[1])
-			return
-		}
-		kingpin.Fatalf("%s, try --help", err)
+	if parseErr != nil && (!strings.HasPrefix(parseErr.Error(), "expected command") || len(os.Args) != 2) {
+		kingpin.Fatalf("%s, try --help", parseErr)
+	}
+
+	store, err := NewJSONStore()
+	must(err)
+	app := NewApp(store)
+
+	if parseErr != nil {
+		app.open(os.Args[1])
+		return
 	}
 
 	switch cmd {
 	case add.FullCommand():
-		web.add(*addName, *addURL)
+		app.add(*addName, *addURL)
 	case remove.FullCommand():
-		web.remove(*removeName)
+		app.remove(*removeName)
 	case list.FullCommand():
-		web.list()
+		app.list()
 	}
-}
-
-func (web *web) open(name string) {
-	fmt.Printf("Opening %s\n", name)
-}
-
-func (web *web) list() {
-	fmt.Println("Listing")
-}
-
-func (web *web) add(name, URL string) {
-	fmt.Printf("Adding %s: %s\n", name, URL)
-}
-
-func (web *web) remove(name string) {
-	fmt.Printf("Removing %s\n", name)
-}
-
-func main() {
-	web := &web{}
-	web.run()
 }
