@@ -5,6 +5,10 @@ import (
 	"strings"
 
 	"gopkg.in/alecthomas/kingpin.v2"
+
+	"github.com/dbridges/web-cli/app"
+	"github.com/dbridges/web-cli/store"
+	"github.com/dbridges/web-cli/util"
 )
 
 var Version string
@@ -28,21 +32,21 @@ func main() {
 		kingpin.Fatalf("%s, try --help", parseErr)
 	}
 
-	store, err := NewJSONStore()
-	must(err)
-	app := NewApp(store)
+	store, err := store.NewJSONStore()
+	util.Must(err)
+	app := app.New(store)
 
 	if parseErr != nil {
-		app.open(os.Args[1])
+		app.Open(os.Args[1])
 		return
 	}
 
 	switch cmd {
 	case add.FullCommand():
-		app.add(*addName, *addURL)
+		app.Add(*addName, *addURL)
 	case remove.FullCommand():
-		app.remove(*removeName)
+		app.Remove(*removeName)
 	case list.FullCommand():
-		app.list()
+		app.List()
 	}
 }

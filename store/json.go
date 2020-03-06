@@ -1,4 +1,4 @@
-package main
+package store
 
 import (
 	"encoding/json"
@@ -10,28 +10,20 @@ import (
 	"github.com/kyoh86/xdg"
 )
 
-var ErrExists = fmt.Errorf("Already exists")
-
-type Entry struct {
-	Path string
-	Name string
-	URL  string
-}
-
-type JSONStore struct {
+type jsonStore struct {
 	path    string
 	entries []Entry
 }
 
-func NewJSONStore() (*JSONStore, error) {
-	store := &JSONStore{path: storePath()}
+func NewJSONStore() (*jsonStore, error) {
+	store := &jsonStore{path: storePath()}
 	if err := store.load(); err != nil {
 		return nil, err
 	}
 	return store, nil
 }
 
-func (store *JSONStore) Add(path, name, url string) error {
+func (store *jsonStore) Add(path, name, url string) error {
 	existing := store.Search(path, name)
 	if len(existing) > 0 {
 		return ErrExists
@@ -43,7 +35,7 @@ func (store *JSONStore) Add(path, name, url string) error {
 	return nil
 }
 
-func (store *JSONStore) Remove(path, name string) error {
+func (store *jsonStore) Remove(path, name string) error {
 	newEntries := make([]Entry, 0)
 	for _, entry := range store.entries {
 		if entry.Path != path || entry.Name != name {
@@ -57,7 +49,7 @@ func (store *JSONStore) Remove(path, name string) error {
 	return nil
 }
 
-func (store *JSONStore) Search(path, name string) []Entry {
+func (store *jsonStore) Search(path, name string) []Entry {
 	entries := make([]Entry, 0)
 	for _, e := range store.entries {
 		pathMatch := e.Path == path && len(path) > 0 || len(path) == 0
@@ -69,7 +61,7 @@ func (store *JSONStore) Search(path, name string) []Entry {
 	return entries
 }
 
-func (store *JSONStore) load() error {
+func (store *jsonStore) load() error {
 	_, err := os.Stat(store.path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -90,7 +82,7 @@ func (store *JSONStore) load() error {
 	return nil
 }
 
-func (store *JSONStore) save() error {
+func (store *jsonStore) save() error {
 	err := os.MkdirAll(path.Dir(store.path), 0755)
 	if err != nil {
 		return err
