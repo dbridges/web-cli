@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"strings"
 
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -32,7 +33,7 @@ func main() {
 		kingpin.Fatalf("%s, try --help", parseErr)
 	}
 
-	store, err := store.NewJSONStore()
+	store, err := store.NewJSONStore(path.Join(util.ConfigDir(), "web-cli.json"))
 	util.Must(err)
 	app := app.New(store)
 

@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
 	"strings"
+
+	"github.com/kyoh86/xdg"
 )
 
 func Must(err error) {
@@ -37,4 +40,12 @@ func GitURL() string {
 		return match
 	}
 	return ""
+}
+
+func ConfigDir() string {
+	fpath, err := xdg.FindConfigFile("web-cli")
+	if err != nil {
+		return path.Join(xdg.ConfigHome(), "web-cli")
+	}
+	return fpath
 }

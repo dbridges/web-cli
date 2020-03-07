@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-
-	"github.com/kyoh86/xdg"
 )
 
 type jsonStore struct {
@@ -15,8 +13,8 @@ type jsonStore struct {
 	entries []Entry
 }
 
-func NewJSONStore() (*jsonStore, error) {
-	store := &jsonStore{path: storePath()}
+func NewJSONStore(path string) (*jsonStore, error) {
+	store := &jsonStore{path: path}
 	if err := store.load(); err != nil {
 		return nil, err
 	}
@@ -96,12 +94,4 @@ func (store *jsonStore) save() error {
 		return err
 	}
 	return nil
-}
-
-func storePath() string {
-	fpath, err := xdg.FindConfigFile("web-cli", "web-cli.json")
-	if err != nil {
-		return path.Join(xdg.ConfigHome(), "web-cli", "web-cli.json")
-	}
-	return fpath
 }
