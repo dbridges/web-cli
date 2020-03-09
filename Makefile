@@ -9,7 +9,7 @@ OUTPUT_PATH=dist/$(BINNAME)
 all: $(OUTPUT_PATH)
 
 $(OUTPUT_PATH): $(GO_SRC) dist
-	go build -ldflags "-X main.Version=$(VERSION)" -o $@
+	go build -ldflags "-X cli.Version=$(VERSION)" -o $@
 
 run:
 	@go run $(GO_SRC)
